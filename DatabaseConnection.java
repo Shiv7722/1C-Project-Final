@@ -29,18 +29,18 @@ public class DatabaseConnection {
         }
     }
 
-    public int getStudentLoginInfo( String name, int id) throws SQLException {
+    public boolean checkStudentLoginInfo( String name, int id) throws SQLException {
     ResultSet rSet = null;
     PreparedStatement pStatement = null;
     try {
-        pStatement = con.prepareStatement("select stRoll from student where studentName = ? and studentID = ? ");
+        pStatement = con.prepareStatement("select * from student where studentName = ? and studentID = ? ");
         pStatement.setString(1, name);
         pStatement.setInt(2, id);
         rSet = pStatement.executeQuery();
         if (rSet.next()) {
-            return rSet.getInt("stRoll");
+            return true;
         } else {
-            return -1; // No data found
+            return false; // No data found
         }
     } finally {
         if (rSet != null) {
@@ -54,26 +54,26 @@ public class DatabaseConnection {
 
 
 
-public boolean checkCProviderInfo( String name, String pass,String contact) throws SQLException {
-    ResultSet rSet = null;
+public boolean checkCProviderInfo(String name, String pass, String contact) throws SQLException {
     PreparedStatement pStatement = null;
+    ResultSet rSet = null;
     try {
-        pStatement = con.prepareStatement("select cProviderName,cProviderPass,cProviderCon from cprovider where cProviderCon = ? and cProviderPass = ?");
-        pStatement.setString(1, contact);
-        pStatement.setString(2, LoginMenu.passEncrypter(pass));
+        pStatement = con.prepareStatement("select * from cProvider where cProviderName = ? and cProviderCon= ?");
+        pStatement.setString(1, name);
+        pStatement.setString(2, contact);
         rSet = pStatement.executeQuery();
-        if (rSet.next()) {
-            if((rSet.getString("cProviderName").equals(name))&&(LoginMenu.passMatch(pass,rSet.getString("cProviderPass")))&&((rSet.getString("cProviderCon")).equals(contact))){
-                boolean x = rSet.getString("cProviderName").equals(name)&&(rSet.getString("cProviderPass")).equals(pass)&&(rSet.getString("cProviderCon")).equals(contact);
-                System.out.println(x);
+        if(rSet.next()){
+            String encryptedPass = rSet.getString("cProviderPass");
+            if(LoginMenu.passMatch(pass, encryptedPass)){
                 return true;
             }else{
                 return false;
             }
-        } else {
-            return false; // No data found
+            
+        }else{
+            return false;
         }
-    } finally {
+    } finally{
         if (rSet != null) {
             rSet.close();
         }
@@ -81,6 +81,10 @@ public boolean checkCProviderInfo( String name, String pass,String contact) thro
             pStatement.close();
         }
     }
+
+    
+
+        
 }
 
 //Method to uplode new course provider to database

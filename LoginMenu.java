@@ -5,12 +5,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.regex.Pattern;
 public class LoginMenu {
     private static Scanner sc;
+
     private DatabaseConnection dconnection;
     private CProvider cProvider;
-    
     public LoginMenu() {
         this.sc = new Scanner(System.in);
-        
         this.dconnection = new DatabaseConnection();
         this.cProvider = new CProvider();
     }
@@ -79,8 +78,9 @@ public class LoginMenu {
             password = new String(passwordArray);
             if(passCheck.equals(password)){
                 if(isValidPassword(password)) {
+                    String encryptedPass = passEncrypter(password);
                     try {
-                        dconnection.addCourseProvider(cProviderName, contact, passEncrypter(password));
+                        dconnection.addCourseProvider(cProviderName, contact,encryptedPass);
                         break;
                     } catch (SQLException e) {
                         System.out.println(e.getMessage());
@@ -96,6 +96,49 @@ public class LoginMenu {
         }
 
         System.out.println("SignedUp Successfully");
+        cProvider.getCProviderMenu();
+
+    }
+
+    public void cProviderLogin(){
+        String cProviderName;
+        String password;
+        String contact;
+
+        System.out.println("To Login as Course Provider : \nPlease enter your name : ");
+        cProviderName = sc.nextLine();
+        System.out.println("Please enter your Contact : ");
+        while(true){
+        contact = sc.nextLine();
+        if(isValidCon(contact)){
+            break;
+        }else{
+            System.out.println("Please enter valid contact\nRe-enter your contact : ");
+        }
+        }
+        
+        Console console = System.console();
+
+        while (true) {
+            char[] passwordArray = console.readPassword("Enter the password: ");
+            password = new String(passwordArray);
+                if(isValidPassword(password)) {                    
+                    try {
+                        if(dconnection.checkCProviderInfo(cProviderName, password, contact)){
+                        break;
+                        }else{
+                            System.out.println("No such data found");
+                        }
+                    } catch (SQLException e) {
+                        System.out.println(e.getMessage());
+                       
+                    }
+                }else {
+                System.out.println("Wrong password !");
+                }
+        
+        }
+        System.out.println("Login successful");
         cProvider.getCProviderMenu();
 
     }
@@ -121,48 +164,7 @@ public class LoginMenu {
 
         
     
-    public void cProviderLogin(){
-        String cProviderName;
-        String password;
-        String contact;
-
-        System.out.println("To Login as Course Provider : \nPlease enter your name : ");
-        cProviderName = sc.nextLine();
-        System.out.println("Please enter your Contact : ");
-        while(true){
-        contact = sc.nextLine();
-        if(isValidCon(contact)){
-            break;
-        }else{
-            System.out.println("Please enter valid contact\nRe-enter your contact : ");
-        }
-        }
-        
-        Console console = System.console();
-
-        while (true) {
-            char[] passwordArray = console.readPassword("Enter the password: ");
-            password = new String(passwordArray);
-                if(isValidPassword(password)) {
-                    System.out.println(password);
-                    try {
-                        if(dconnection.checkCProviderInfo(cProviderName, password, contact)){
-                        break;
-                        }else{
-                            System.out.println("Information doesn't match");
-                            System.out.println(dconnection.checkCProviderInfo(cProviderName, password, contact)); 
-                        }
-                    } catch (SQLException e) {
-                        System.out.println(e.getMessage());
-                       
-                    }
-                
-                } else {
-                System.out.println("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one digit.");
-                }
-        
-        }
-    }
+    
 
     
     public void loginAsStudent() {
@@ -178,19 +180,14 @@ public class LoginMenu {
         System.out.println("Please enter your Roll Number : ");
         roll = sc.nextInt();
         try {
-            int getRoll = dconnection.getStudentLoginInfo(username, studentID);
-         if (getRoll!=-1) {
-            if (roll==getRoll) {
+            boolean checkResult =dconnection.checkStudentLoginInfo(username, studentID);
+         if (checkResult) {
                 System.out.println("Login successful! Welcome, "+username);
                 
             }else{
                 System.out.println("Please enter correct information :");
                 loginAsStudent();
             }
-         } else {
-            System.out.println("No such data found \nPlease enter correct information : ");
-            loginAsStudent();
-         }
             
         } catch (SQLException e) {
             System.out.println(e.getMessage()+"\nPlease enter the correct information :");
