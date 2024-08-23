@@ -14,11 +14,10 @@ public class LoginMenu {
         this.cProvider = new CProvider();
     }
 
-    public static int getChoice() {
-        int choice = sc.nextInt();
-        sc.nextLine(); 
-        return choice;
-    }
+    // public static int getChoice() {
+        
+    //     return choice;
+    // }
 
     public void getHomeMenu(){
         System.out.println("Login/SignUp Menu");
@@ -29,7 +28,8 @@ public class LoginMenu {
         System.out.println("4. Exit");
 
         System.out.print("Enter the corresponding number to select the option : ");
-        switch (getChoice()) {
+        int choice = sc.nextInt();
+        switch (choice) {
             case 1:
                 cProviderLogin();
                 break;
@@ -54,6 +54,7 @@ public class LoginMenu {
         String cProviderName;
         String password;
         String contact;
+        int cProviderID;
 
         System.out.println("To SignUp as Course Provider : \nPlease enter your name : ");
         cProviderName = sc.nextLine();
@@ -78,9 +79,8 @@ public class LoginMenu {
             password = new String(passwordArray);
             if(passCheck.equals(password)){
                 if(isValidPassword(password)) {
-                    String encryptedPass = passEncrypter(password);
                     try {
-                        dconnection.addCourseProvider(cProviderName, contact,encryptedPass);
+                        dconnection.addCourseProvider(cProviderName, contact,passEncrypter(password));
                         break;
                     } catch (SQLException e) {
                         System.out.println(e.getMessage());
@@ -96,7 +96,14 @@ public class LoginMenu {
         }
 
         System.out.println("SignedUp Successfully");
-        cProvider.getCProviderMenu();
+        try {
+            cProviderID=dconnection.getCProviderID(cProviderName, password, contact);
+            cProvider.getCProviderMenu(cProviderID);
+        } catch (SQLException e) {
+            e.getMessage();
+        }
+        
+        
 
     }
 
@@ -104,11 +111,13 @@ public class LoginMenu {
         String cProviderName;
         String password;
         String contact;
+        int cProviderID;
 
         System.out.println("To Login as Course Provider : \nPlease enter your name : ");
         cProviderName = sc.nextLine();
-        System.out.println("Please enter your Contact : ");
+        
         while(true){
+        System.out.println("Please enter your Contact : ");
         contact = sc.nextLine();
         if(isValidCon(contact)){
             break;
@@ -125,6 +134,7 @@ public class LoginMenu {
                 if(isValidPassword(password)) {                    
                     try {
                         if(dconnection.checkCProviderInfo(cProviderName, password, contact)){
+                            cProviderID=dconnection.getCProviderID(cProviderName, password, contact);
                         break;
                         }else{
                             System.out.println("No such data found");
@@ -139,7 +149,7 @@ public class LoginMenu {
         
         }
         System.out.println("Login successful");
-        cProvider.getCProviderMenu();
+        cProvider.getCProviderMenu(cProviderID);
 
     }
 
