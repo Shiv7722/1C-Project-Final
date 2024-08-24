@@ -33,7 +33,6 @@ public class CProvider {
             case 3:
                 break;
             case 4:
-                LoginMenu.exit();
                 break;
             default:
             System.out.println("Please enter the valid option : ");

@@ -29,6 +29,7 @@ public class LoginMenu {
 
         System.out.print("Enter the corresponding number to select the option : ");
         int choice = sc.nextInt();
+        sc.nextLine();
         switch (choice) {
             case 1:
                 cProviderLogin();
@@ -40,7 +41,6 @@ public class LoginMenu {
                 loginAsStudent();
                 break;
             case 4:
-                exit();
                 break;
             default:
             System.out.println("Please enter the valid option : ");
@@ -60,7 +60,6 @@ public class LoginMenu {
         cProviderName = sc.nextLine();
         System.out.println("Please enter your Contact : ");
         while(true){
-        
         contact = sc.nextLine();
         if(isValidCon(contact)){
             break;
@@ -208,10 +207,7 @@ public class LoginMenu {
         
     }
 
-    public static void exit() {
-        System.out.println("Goodbye!");
-        System.exit(0);
-    }
+    
 
     
     public static void main(String[] args) {
