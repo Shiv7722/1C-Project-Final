@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.mysql.cj.protocol.Resultset;
 
 import java.lang.Class;
 
@@ -13,7 +12,7 @@ public class DatabaseConnection {
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "root";
 
-    private Connection con;
+    private static Connection con;
 
     public DatabaseConnection() {
             try {
@@ -80,11 +79,36 @@ public boolean checkCProviderInfo(String name, String pass, String contact) thro
         if (pStatement != null) {
             pStatement.close();
         }
-    }
+    }    
+}
 
-    
-
-        
+public int getCProviderID(String name, String pass, String contact) throws SQLException {
+    PreparedStatement pStatement = null;
+    ResultSet rSet = null;
+    try {
+        pStatement = con.prepareStatement("select * from cProvider where cProviderName = ? and cProviderCon= ?");
+        pStatement.setString(1, name);
+        pStatement.setString(2, contact);
+        rSet = pStatement.executeQuery();
+        if(rSet.next()){
+            String encryptedPass = rSet.getString("cProviderPass");
+            if(LoginMenu.passMatch(pass, encryptedPass)){
+                return rSet.getInt("cProviderID");
+            }else{
+                return -1;
+            }
+            
+        }else{
+            return -2;
+        }
+    } finally{
+        if (rSet != null) {
+            rSet.close();
+        }
+        if (pStatement != null) {
+            pStatement.close();
+        }
+    }    
 }
 
 //Method to uplode new course provider to database
@@ -98,8 +122,6 @@ public void addCourseProvider(String name,String contact,String pass) throws SQL
         int result = pStatement.executeUpdate();
         if (result==1) {
             System.out.println("Account Created Successfully");
-        } else {
-            System.out.println("Unsuccessfull");
         }
     } finally {
         
@@ -109,33 +131,23 @@ public void addCourseProvider(String name,String contact,String pass) throws SQL
     }
 }
 
-public ResultSet getStudentDetails(int id) throws SQLException{
+public ResultSet getStudentDetails(int cProviderId) throws SQLException{
     ResultSet rSet = null;
     PreparedStatement pStatement = null;
     try {
-        pStatement = con.prepareStatement("select studentName, stRoll, stCon from student where cProviderId = cprovider.");
-        
-        pStatement.setInt(1, id);
+        pStatement = con.prepareStatement("select studentName, stRoll, stCon from student where cProviderId = ?");
+        pStatement.setInt(1, cProviderId);
         rSet = pStatement.executeQuery();
-        if (rSet!=null) {
-            return rSet;
-        } else {
-            return null;
-        }
-    } finally {
+        return rSet;
         
+    } finally {
         if (pStatement != null) {
             pStatement.close();
         }
+        if (rSet != null) {
+            rSet.close();
+        }
     }
 }
-public static void main(String[] args) {
-    DatabaseConnection dCon = new DatabaseConnection();
-    try {
-        boolean x = dCon.checkCProviderInfo("Shivraj Singh", "Shiv1234", "7722974467");
-         System.out.println(x);
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-}
+
 }
